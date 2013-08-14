@@ -54,6 +54,46 @@ namespace MailChimp.Tests
         }
 
         [TestMethod]
+        public void StaticSegmentAdd_Successful()
+        {
+            //  Arrange
+            MailChimpManager mc = new MailChimpManager(TestGlobal.Test_APIKey);
+            ListResult lists = mc.GetLists();
+           
+            //Get existing segments
+            List<StaticSegment> segments = mc.GetStaticSegmentsFromList(lists.Data[1].Id);
+            StaticSegmentDeleteResult deleteResult;
+
+            //Check to see if test segment exists, delete if it does.
+            if (segments.Where(x => x.Name == "TestSegment").Count() > 0)
+                deleteResult = mc.StaticSegmentDelete(lists.Data[1].Id, segments.Where(x => x.Name == "TestSegment").FirstOrDefault().Id);
+
+            //  Act
+            StaticSegmentAddResult results = mc.StaticSegmentAdd(lists.Data[1].Id, "TestSegment");
+
+            //  Assert
+            Assert.IsTrue(!string.IsNullOrEmpty(results.Id));
+        }
+
+
+
+        [TestMethod]
+        public void StaticSegment_Successful()
+        {
+            //  Arrange
+            MailChimpManager mc = new MailChimpManager(TestGlobal.Test_APIKey);
+            ListResult lists = mc.GetLists();
+           
+
+            //  Act
+            List<StaticSegment> results = mc.GetStaticSegmentsFromList(lists.Data[1].Id);
+
+            //  Assert
+            Assert.IsNotNull(results);
+        }
+
+
+        [TestMethod]
         public void Subscribe_Successful()
         {
             //  Arrange

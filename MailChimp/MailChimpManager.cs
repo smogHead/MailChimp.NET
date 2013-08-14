@@ -11,6 +11,7 @@ using MailChimp.Folders;
 using MailChimp.Helper;
 using MailChimp.Lists;
 using ServiceStack.Text;
+using Newtonsoft.Json;
 
 namespace MailChimp
 {
@@ -21,7 +22,7 @@ namespace MailChimp
     public class MailChimpManager
     {
         #region Fields and properties
-        
+
         /// <summary>
         /// The HTTPS endpoint for the API.  
         /// See http://apidocs.mailchimp.com/api/2.0/#api-endpoints for more information
@@ -32,7 +33,7 @@ namespace MailChimp
         /// The datacenter prefix.  This will be automatically determined
         /// based on your API key
         /// </summary>
-        private string _dataCenterPrefix = string.Empty; 
+        private string _dataCenterPrefix = string.Empty;
 
         #endregion
 
@@ -52,7 +53,7 @@ namespace MailChimp
         private string GetDatacenterPrefix(string apiKey)
         {
             //  The key should contain a '-'.  If it doesn't, throw an exception:
-            if(!apiKey.Contains('-'))
+            if (!apiKey.Contains('-'))
             {
                 throw new ArgumentException("API key is not valid.  Must be a valid v2.0 Mailchimp API key.");
             }
@@ -80,7 +81,7 @@ namespace MailChimp
         {
             get;
             set;
-        } 
+        }
 
         #endregion
 
@@ -669,6 +670,81 @@ namespace MailChimp
         }
 
         /// <summary>
+        /// Save a segment against a list for later use. 
+        /// There is no limit to the number of segments which can be saved. 
+        /// Static Segments are not tied to any merge data, interest groups, etc. 
+        /// They essentially allow you to configure an unlimited number of custom segments 
+        /// which will have standard performance. When using proper segments, 
+        /// Static Segments are one of the available options for segmentation 
+        /// just as if you used a merge var (and they can be used with other 
+        /// segmentation options), though performance may degrade at that point.
+        /// </summary>
+        /// <param name="listId">the list id to connect to (can be gathered using GetLists())</param>
+        /// <param name="name">a unique name per list for the segment - 100 byte maximum length, anything longer will throw an error</param>
+        /// <returns></returns>
+        public StaticSegmentAddResult StaticSegmentAdd(string listId, string staticSegmentName)
+        {
+            //  Our api action:
+            string apiAction = "lists/static-segment-add";
+
+            //  Create our arguments object:
+            object args = new
+            {
+                apikey = this.APIKey,
+                id = listId,
+                name = staticSegmentName
+            };
+
+            //  Make the call:
+            return MakeAPICall<StaticSegmentAddResult>(apiAction, args);
+        }
+
+        /// <summary>
+        /// Delete a static segment. Note that this will, of course, 
+        /// remove any member affiliations with the segment
+        /// </summary>
+        /// <param name="listId">the list id to connect to (can be gathered using GetLists())</param>
+        /// <param name="staticSegmentId">the id of the static segment to delete - get from listStaticSegments()</param>
+        /// <returns></returns>
+        public StaticSegmentDeleteResult StaticSegmentDelete(string listId, string staticSegmentId)
+        {
+            //  Our api action:
+            string apiAction = "lists/static-segment-del";
+
+            //  Create our arguments object:
+            object args = new
+            {
+                apikey = this.APIKey,
+                id = listId,
+                seg_id = staticSegmentId
+            };
+
+            //  Make the call:
+            return MakeAPICall<StaticSegmentDeleteResult>(apiAction, args);
+        }
+
+        /// <summary>
+        /// Retrieve all of the Static Segments for a list.
+        /// </summary>
+        /// <param name="listId">the list id to connect to (can be gathered using GetLists())</param>
+        /// <returns></returns>
+        public List<StaticSegment> GetStaticSegmentsFromList(string listId)
+        {
+            //  Our api action:
+            string apiAction = "lists/static-segments";
+
+            //  Create our arguments object:
+            object args = new
+            {
+                apikey = this.APIKey,
+                id = listId
+            };
+
+            //  Make the call:
+            return MakeAPICall<List<StaticSegment>>(apiAction, args);
+        }
+
+        /// <summary>
         /// Subscribe the provided email to a list. By default this sends a 
         /// confirmation email - you will not see new members until the 
         /// link contained in it is clicked!
@@ -858,7 +934,7 @@ namespace MailChimp
         #endregion
 
         #region Generic API calling method
-        
+
         /// <summary>
         /// Generic API call.  Expects to be able to serialize the results
         /// to the specified type
@@ -871,7 +947,7 @@ namespace MailChimp
         {
             //  First, make sure the datacenter prefix is set properly.  
             //  If it's not, throw an exception:
-            if(string.IsNullOrEmpty(_dataCenterPrefix))
+            if (string.IsNullOrEmpty(_dataCenterPrefix))
                 throw new ApplicationException("API key not valid (datacenter not specified)");
 
             //  Next, construct the full url based on the passed apiAction:
@@ -883,9 +959,12 @@ namespace MailChimp
             try
             {
                 //  Call the API with the passed arguments:
-                results = fullUrl.PostJsonToUrl(args).FromJson<T>();
+                results = fullUrl.PostJsonToUrl(args).Trim(' ', '\n').FromJson<T>();
+
+                return results;
+
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 string errorBody = ex.GetResponseBody();
 
