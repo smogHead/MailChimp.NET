@@ -745,6 +745,66 @@ namespace MailChimp
         }
 
         /// <summary>
+        /// Add list members to a static segment. 
+        /// It is suggested that you limit batch size to no more than 10,000 
+        /// addresses per call. 
+        /// Email addresses must exist on the list in order to be included - 
+        /// this will not subscribe them to the list!
+        /// </summary>
+        /// <param name="listId">the list id to connect to (can be gathered using GetLists())</param>
+        /// <param name="segmentId"></param>
+        /// <param name="batch"></param>
+        /// <returns></returns>
+        public StaticSegmentMembersAddResult StaticSegmentMembersAdd(string listId, string segmentId, List<BatchEmailParameter> listOfEmails)
+        {
+            //  Our api action:
+            string apiAction = "lists/static-segment-members-add";
+
+            //  Create our arguments object:
+            object args = new
+            {
+                apikey = this.APIKey,
+                id = listId,
+                seg_id = segmentId,
+                batch = listOfEmails,
+              
+            };
+
+            //  Make the call:
+            return MakeAPICall<StaticSegmentMembersAddResult>(apiAction, args);
+        }
+
+        /// <summary>
+        /// Remove list members from a static segment. 
+        /// It is suggested that you limit batch size to 
+        /// no more than 10,000 addresses per call. 
+        /// Email addresses must exist on the list in order to be removed - 
+        /// this will not unsubscribe them from the list!
+        /// </summary>
+        /// <param name="listId">the list id to connect to (can be gathered using GetLists())</param>
+        /// <param name="segmentId"></param>
+        /// <param name="batch"></param>
+        /// <returns></returns>
+        public StaticSegmentMembersDeleteResult StaticSegmentMembersDelete(string listId, string segmentId, List<BatchEmailParameter> listOfEmails)
+        {
+            //  Our api action:
+            string apiAction = "lists/static-segment-members-del";
+
+            //  Create our arguments object:
+            object args = new
+            {
+                apikey = this.APIKey,
+                id = listId,
+                seg_id = segmentId,
+                batch = listOfEmails,
+
+            };
+
+            //  Make the call:
+            return MakeAPICall<StaticSegmentMembersDeleteResult>(apiAction, args);
+        }
+
+        /// <summary>
         /// Subscribe the provided email to a list. By default this sends a 
         /// confirmation email - you will not see new members until the 
         /// link contained in it is clicked!
