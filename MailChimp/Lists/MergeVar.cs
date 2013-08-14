@@ -18,6 +18,26 @@ namespace MailChimp.Lists
         /// set this to change the email address. This is only respected on calls using update_existing or 
         /// when passed to listUpdateMember().
         /// </summary>
+        [DataMember(Name = "fname")]
+        public string FirstName
+        {
+            get;
+            set;
+        }
+        /// <summary>
+        /// set this to change the email address. This is only respected on calls using update_existing or 
+        /// when passed to listUpdateMember().
+        /// </summary>
+        [DataMember(Name = "lname")]
+        public string Surname
+        {
+            get;
+            set;
+        }
+        /// <summary>
+        /// set this to change the email address. This is only respected on calls using update_existing or 
+        /// when passed to listUpdateMember().
+        /// </summary>
         [DataMember(Name = "new-email")]
         public string NewEmail
         {

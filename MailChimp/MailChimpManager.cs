@@ -755,7 +755,7 @@ namespace MailChimp
         /// <param name="segmentId"></param>
         /// <param name="batch"></param>
         /// <returns></returns>
-        public StaticSegmentMembersAddResult StaticSegmentMembersAdd(string listId, string segmentId, List<BatchEmailParameter> listOfEmails)
+        public StaticSegmentMembersAddResult StaticSegmentMembersAdd(string listId, string segmentId, List<StaticSegmentBatchEmailParameter> listOfEmails)
         {
             //  Our api action:
             string apiAction = "lists/static-segment-members-add";
