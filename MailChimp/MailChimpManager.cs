@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -27,13 +28,13 @@ namespace MailChimp
         /// The HTTPS endpoint for the API.  
         /// See http://apidocs.mailchimp.com/api/2.0/#api-endpoints for more information
         /// </summary>
-        private string _httpsUrl = "https://{0}.api.mailchimp.com/2.0/{1}.json";
+        private const string HttpsUrl = "https://{0}.api.mailchimp.com/2.0/{1}.json";
 
         /// <summary>
         /// The datacenter prefix.  This will be automatically determined
         /// based on your API key
         /// </summary>
-        private string _dataCenterPrefix = string.Empty;
+        private readonly string _dataCenterPrefix = string.Empty;
 
         #endregion
 
@@ -52,6 +53,7 @@ namespace MailChimp
         /// <returns></returns>
         private string GetDatacenterPrefix(string apiKey)
         {
+            if (string.IsNullOrEmpty(apiKey)) return "";
             //  The key should contain a '-'.  If it doesn't, throw an exception:
             if (!apiKey.Contains('-'))
             {
@@ -96,7 +98,7 @@ namespace MailChimp
         public CampaignActionResult DeleteCampaign(string cId)
         {
             //  Our api action:
-            string apiAction = "campaigns/delete";
+            const string apiAction = "campaigns/delete";
 
             //  Create our arguments object:
             object args = new
@@ -1011,10 +1013,10 @@ namespace MailChimp
                 throw new ApplicationException("API key not valid (datacenter not specified)");
 
             //  Next, construct the full url based on the passed apiAction:
-            string fullUrl = string.Format(_httpsUrl, _dataCenterPrefix, apiAction);
+            string fullUrl = string.Format(HttpsUrl, _dataCenterPrefix, apiAction);
 
             //  Initialize the results to return:
-            T results = default(T);
+            var results = default(T);
 
             try
             {
@@ -1026,10 +1028,10 @@ namespace MailChimp
             }
             catch (Exception ex)
             {
-                string errorBody = ex.GetResponseBody();
+                var errorBody = ex.GetResponseBody();
 
                 //  Serialize the error information:
-                ApiError apiError = errorBody.FromJson<ApiError>();
+                var apiError = errorBody.FromJson<ApiError>();
 
                 //  Throw a new exception based on this information:
                 throw new MailChimpAPIException(apiError.Error, ex, apiError);

@@ -9,6 +9,7 @@ namespace MailChimp.Errors
     /// <summary>
     /// Mailchimp API exception class
     /// </summary>
+    [SerializableAttribute]
     public class MailChimpAPIException : Exception
     {
         public MailChimpAPIException(string message, Exception innerException, ApiError apiError) 
